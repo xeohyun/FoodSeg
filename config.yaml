@@ -1,0 +1,6 @@
+batch_size: 8
+learning_rate: 0.00005
+epochs: 100
+save_path: '/Users/xeohyun/DEV/CV/FoodSeg_mask2former/foodseg_result'
+load_checkpoint: null
+log_dir: '/Users/xeohyun/DEV/CV/FoodSeg_mask2former/foodseg_result/logs'
