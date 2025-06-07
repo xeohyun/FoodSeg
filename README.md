@@ -13,19 +13,16 @@
 
 ## 💡 Motivation
 
-이 프로젝트는 다음과 같은 실험적 시도와 시행착오를 기반으로 완성되었습니다:
-
-- **Segment Anything Model (SAM)**, **Fast-SAM**, **DeepLabV3+** 등 다양한 segmentation 모델을 시도했지만, 음식 객체 간의 경계 구분이 미흡하거나 예측 라벨이 정확하지 않았습니다.
-- 따라서, 음식에 특화된 dataset(FoodSeg103)에 fine-tuned 된 **Mask2Former** 모델을 한 번 더 fine-tuning하여 최종적으로 segmentation을 수행하였습니다.
+- base model로 Mask2Former를 선정하고, 음식에 특화된 dataset인 FoodSeg103으로 fine-tuning하여 segmentation을 수행하였습니다.
 
 ---
 ### 🧠 What is Segmentation?
 
-**Segmentation**은 이미지의 객체를 범위변에서 구분하고, 각 객체를 구분한 **마스크(mask)**를 발견하는 작업입니다.
+**Segmentation**은 이미지 속 각 객체를 픽셀 단위로 구분해, 객체별로 영역을 나누는 작업입니다.
 
-사이즈나 형편이 비유한 건틀리를 box로 가리는 detection에 비해, segmentation은 **pixel 단위**로 정해진 범위를 구호합니다.
+단순히 경계만 추정해 사각형으로 감싸는 Object Detection과 달리, Segmentation은 훨씬 더 정밀하게 **픽셀 단위 마스크(mask)**를 생성합니다.
 
-여기서 사용한 **semantic segmentation**은 객체들을 단순 라벨로 분리하는 방식입니다.
+이 프로젝트에서 사용한 Semantic Segmentation은 이미지 내 객체들을 의미 있는 라벨 단위로 구분하여, 같은 종류의 객체는 같은 라벨로 표시합니다.
 
 ---
 ## 🔪 Model Overview  
@@ -36,6 +33,38 @@
 - **데이터셋**: [FoodSeg103](https://huggingface.co/datasets/EduardoPacheco/FoodSeg103)
 - **결과**: 음식 객체별 segmantation 마스크 및 lable 반환  
 - **후처리**: LLM(Gemini)을 통해 자연어 설명 및 칼로리 예측
+
+---
+## 📂 데이터셋 구성
+
+- **이름**: FoodSeg103 (HuggingFace에서 사용 가능)
+
+- **Train 데이터 수**: 약 6,000장
+
+- **Validation 데이터 수**: 약 1,600장
+
+- **총 클래스 수**: 104개 (음식 종류별 고유 라벨 포함)
+
+### 🏷️ 라벨 (id2label 포맷)
+
+FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
+
+- 0: background
+
+- 1: apple
+
+- 2: banana
+
+- 3: fried rice
+
+...
+
+- 103: yogurt
+
+
+각 이미지의 픽셀은 이 라벨 ID에 해당하는 값을 가지며, `.json` 형식으로 제공되는 라벨 매핑 파일(`id2label.json`)을 통해 사람이 읽을 수 있는 라벨명으로 변환됩니다.
+
+> 예: `id2label[3]` → `"fried rice"`
 
 ---
 
@@ -148,38 +177,6 @@ python gradio_app/app.py
 > Gradio UI를 통해 이미지 입력 시 마스크 결과 + 자연어 설명 + 칼로리 예측까지 확인 가능
 
 ---
-## 📂 데이터셋 구성
-
-- **이름**: FoodSeg103 (HuggingFace에서 사용 가능)
-
-- **Train 데이터 수**: 약 6,000장
-
-- **Validation 데이터 수**: 약 1,600장
-
-- **총 클래스 수**: 104개 (음식 종류별 고유 라벨 포함)
-
-### 🏷️ 라벨 (id2label 포맷)
-
-FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
-
-- 0: background
-
-- 1: apple
-
-- 2: banana
-
-- 3: fried rice
-
-...
-
-- 103: yogurt
-
-
-각 이미지의 픽셀은 이 라벨 ID에 해당하는 값을 가지며, `.json` 형식으로 제공되는 라벨 매핑 파일(`id2label.json`)을 통해 사람이 읽을 수 있는 라벨명으로 변환됩니다.
-
-> 예: `id2label[3]` → `"fried rice"`
-
----
 
 ## 🧪 코드 구성 및 설명
 
@@ -246,8 +243,6 @@ FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
 
 ## ⚠️ 한계점 (Limitation)
 
-- 초기에는 다양한 모델 (SAM, Segment Anything 등) 시도했으나,  
-  음식 세그먼트에 적합하지 않아서 최종적으로 Mask2Former 참조
 - 정확한 칼로리 계산을 위해서는 실제 물리 크기나 무게 정보가 필요하지만,  
   현재는 단순 **라벨 기반 대략 예측** 수준
 - Segmentation의 pixel 값과 depthmap을 함께 사용해 실제 음식 크기를 추정하고 칼로리를 예측하려 했으나,  
@@ -268,12 +263,12 @@ FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
   - Backbone 고정 + Transformer Decoder 중심 학습 실험
   - Augmentation 다양화 및 하이퍼파라미터 최적화
 - **🔍 평가 지표 보강**  
-  Mean IoU 외에도 pixel accuracy, class-wise IoU 등을 추가 도입하여 모델 성능을 다각도로 평가합니다.
+  - Mean IoU 외에도 pixel accuracy, class-wise IoU 등을 추가 도입하여 모델 성능을 다각도로 평가합니다.
 - **🧠 칼로리 예측 정밀화**  
   - Segmentation mask와 depth map을 함께 활용하여 실제 음식 부피 추정 후 칼로리 계산
   - 손이나 식기류를 참조 스케일로 자동 인식하는 기능 구현 고려
 - **🧪 데이터셋 확장**  
   - FoodSeg103 외 커스텀 음식 이미지 수집 및 라벨링 진행
   - 다양한 촬영 환경(조명, 각도, 기기 등)에서도 잘 동작하도록 일반화 성능 개선
-
----
+- **🧩 LLM + Zero-Shot Vision 모델 결합**
+  - SAM과 같은 Zero-Shot segmentation 모델과 LLM을 결합해 다양한 음식 종류에 대한 칼로리 예측 수행
