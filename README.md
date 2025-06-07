@@ -7,7 +7,7 @@
 
 ## 📸 Demo 
 ![FoodSeg Demo](/Demo_.gif)  
-![👉 Demo 영상 (YouTube)](https://youtu.be/NV5Q-oT7rMI)
+![Demo 영상 (YouTube)](https://youtu.be/NV5Q-oT7rMI)
 
 ---
 
@@ -52,7 +52,7 @@ Mask2Former는 다음과 같은 구조로 구성되어 있습니다:
 
 ---
 
-## 🚀 주요 기능
+## 💡 주요 기능
 - **Semantic Segmentation**: Mask2Former 기반 이미지 내 음식 분할
 - **Gradio UI**: 웹 기반 이미지 업로드 및 결과 확인
 - **Gemini API 연동**: 분할 결과 기반 자연어 설명 생성
@@ -244,7 +244,7 @@ FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
 
 ---
 
-## ⚠️ 한계점
+## ⚠️ 한계점 (Limitation)
 
 - 초기에는 다양한 모델 (SAM, Segment Anything 등) 시도했으나,  
   음식 세그먼트에 적합하지 않아서 최종적으로 Mask2Former 참조
@@ -256,11 +256,24 @@ FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
   → 실제 존재하는 수천 가지 음식 종류를 모두 커버하지 못함  
   → 예: 김치찌개, 떡볶이, 잡채 등의 **일상적 한국 음식은 미포함**  
   → 이로 인해 **분류 불가능하거나 부정확한 예측**이 발생할 수 있음
+- Mean IoU가 약 0.39 수준으로, 복잡한 음식 간 경계 구분에는 아직 부족함
+  → 이는 같은 색상 계열이나 질감이 유사한 음식 간 구분이 어려워지는 문제에서 기인함
+  → 특히 여러 음식이 겹쳐 있거나 포장지, 그림자 등의 요소가 포함되면 성능이 떨어짐
 ---
 
-## 🚧 향후 계획
+## 🚧 향후 계획 (Future Plans)
 
-- Fine-tuning 데이터셋 증가
-- 실제 칼로리 계산을 위한 depth estimation 또는 reference scaling 도입
+- **📈 Fine-Tuning 전략 개선**  
+  - 클래스 불균형 해결을 위한 가중치 적용
+  - Backbone 고정 + Transformer Decoder 중심 학습 실험
+  - Augmentation 다양화 및 하이퍼파라미터 최적화
+- **🔍 평가 지표 보강**  
+  Mean IoU 외에도 pixel accuracy, class-wise IoU 등을 추가 도입하여 모델 성능을 다각도로 평가합니다.
+- **🧠 칼로리 예측 정밀화**  
+  - Segmentation mask와 depth map을 함께 활용하여 실제 음식 부피 추정 후 칼로리 계산
+  - 손이나 식기류를 참조 스케일로 자동 인식하는 기능 구현 고려
+- **🧪 데이터셋 확장**  
+  - FoodSeg103 외 커스텀 음식 이미지 수집 및 라벨링 진행
+  - 다양한 촬영 환경(조명, 각도, 기기 등)에서도 잘 동작하도록 일반화 성능 개선
 
 ---
