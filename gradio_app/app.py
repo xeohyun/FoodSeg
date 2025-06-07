@@ -6,7 +6,6 @@ with gr.Blocks() as FoodSeg_GUI:
     gr.Markdown(
         "# **<p align='center'>Fine-Tuned Mask2Former for FoodSeg103 Semantic Segmentation</p>**"
     )
-    gr.Markdown("<p align='center'>By Nima Vahdat</p>")
 
     # Group for input and output
     with gr.Group():
@@ -17,6 +16,8 @@ with gr.Blocks() as FoodSeg_GUI:
                 )
             with gr.Column(scale=1.5):
                 output_image = gr.Image(label="Mask2Former Output:")
+                output_text = gr.Textbox(label="AI-generated description", lines=4)
+
 
     # Group for the run button
     with gr.Group():
@@ -25,7 +26,7 @@ with gr.Blocks() as FoodSeg_GUI:
                 start_run = gr.Button("Get the output")
 
     # Button click event
-    start_run.click(predict_masks, inputs=input_image, outputs=output_image)
+    start_run.click(predict_masks, inputs=input_image,  outputs=[output_image, output_text])
 
 if __name__ == "__main__":
     FoodSeg_GUI.launch(share=True, debug=False)
