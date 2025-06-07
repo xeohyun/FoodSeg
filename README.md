@@ -6,7 +6,7 @@
 ---
 
 ## 📸 Demo 
-![FoodSeg Demo](/Demo_.gif)  
+![FoodSeg Demo](/assets/Demo_.gif)  
 [🔗 데모 영상 보기 (YouTube)](https://youtu.be/NV5Q-oT7rMI)
 
 ---
@@ -43,7 +43,7 @@
 
 Mask2Former는 다음과 같은 구조로 구성되어 있습니다:
 
-![Model Architecture](./mask2former_structure.png)
+![Model Architecture](./assets/mask2former_structure.png)
 
 - **Backbone**: Swin Transformer 기반으로 hierarchical하게 feature를 추출합니다.
 - **Pixel Decoder**: multi-scale feature를 통합하고 upsample하여 segmentation head로 전달합니다.
@@ -236,7 +236,7 @@ FoodSeg103 데이터셋은 다음과 같은 형식의 라벨을 포함합니다:
 ---
 ### 📊 Loss 및 IoU 시각화 결과
 
-![Training Progress](./training_progress.png)
+![Training Progress](./assets/training_progress.png)
 
 - 좌측 그래프는 **Training Loss vs Validation Loss**의 변화를 나타냅니다.
 - 우측은 **Mean IoU**가 Epoch별로 점진적으로 상승하는 양상을 보여줍니다.
