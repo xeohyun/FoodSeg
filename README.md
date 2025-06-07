@@ -7,7 +7,7 @@
 
 ## 📸 Demo 
 ![FoodSeg Demo](/Demo_.gif)  
-![Demo 영상 (YouTube)](https://youtu.be/NV5Q-oT7rMI)
+[🔗 데모 영상 보기 (YouTube)](https://youtu.be/NV5Q-oT7rMI)
 
 ---
 
