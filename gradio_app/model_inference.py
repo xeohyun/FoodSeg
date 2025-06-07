@@ -29,33 +29,6 @@ def color_palette(num_classes=150, seed=85):
     return palette
 
 
-# def load_model_and_processor(device):
-#     """
-#     Loads the Mask2Former model and processor from the latest checkpoint in the specified directory.
-
-#     Args:
-#         device (str): Device to load the model onto (e.g., 'cpu' or 'cuda').
-
-#     Returns:
-#         tuple: A tuple containing the loaded model and processor.
-#     """
-#     directory_path = "/Users/xeohyun/DEV/CV/FoodSeg_mask2former/foodseg_result"
-#     all_files = os.listdir(directory_path)
-#     sorted_files = sorted(all_files)
-#     saved_model_path = os.path.join(directory_path, sorted_files[-1])
-
-#     model = Mask2FormerForUniversalSegmentation.from_pretrained(saved_model_path).to(
-#         device
-#     )
-#     processor = Mask2FormerImageProcessor(
-#         ignore_index=0,
-#         reduce_labels=False,
-#         do_resize=False,
-#         do_rescale=False,
-#         do_normalize=False,
-#     )
-#     return model, processor
-
 def load_model_and_processor(device):
     """
     Loads the Mask2Former model and processor from a valid directory only.
@@ -240,7 +213,7 @@ def predict_masks(input_image_path):
                 predicted_labels.append(label)
 
     # 📌 OpenAI로 설명 생성
-    description = generate_caption_from_labels_with_calories(predicted_labels)
+    description = generate_caption_from_labels_with_calories(predicted_labels, input_image_path)
 
     return output_result, description
 
@@ -253,25 +226,45 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
 
-def generate_caption_from_labels_with_calories(labels):
-    """
-    음식 라벨을 기반으로 음식 추정 및 칼로리까지 예측하는 Gemini 프롬프트 생성 함수
-    """
+def generate_caption_from_labels_with_calories(labels,input_image_path):
     if not labels:
         return "음식이 감지되지 않았습니다."
 
     prompt = f"""
-다음은 이미지에서 감지된 음식 항목들입니다:  
+아래는 이미지에서 감지된 재료 목록입니다:  
 {', '.join(labels)}
 
-1. 이 항목들을 기반으로 어떤 음식인지 추정해 주세요.  
-2. 해당 음식이 일반적인 경우에 가지는 평균 칼로리를 추정해 주세요.  
-3. '예: 햄버거 (치즈, 빵, 고기 포함) - 약 500kcal' 형태로 작성해 주세요.
-    """
+1. 이 재료들을 기반으로 예상되는 음식이 있다면 하나만 구체적으로 추정해 주세요.  
+2. 해당 음식이 일반적으로 가지는 평균 칼로리를 추정해 주세요.  
+→ 예: **햄버거 - 약 500kcal**
+
+3. 이후에는 위에 감지된 **개별 재료들 각각에 대해** 다음 정보를 제공해 주세요:  
+    - 구성 설명  
+    - 1인분 혹은 일반적인 양 기준의 칼로리  
+    - 간단한 참고 정보  
+형식은 아래 예시처럼 통일해 주세요.
+
+---
+
+예시 출력:
+
+**예상 음식:** 햄버거 — 약 500kcal
+
+**재료별 정보:**  
+- **빵 (Bread)** (주요 구성: 밀가루, 물 등) — 약 200kcal  
+- **소고기 패티 (Beef Patty)** (100g 기준) — 약 250kcal  
+- **치즈 (Cheese)** — 약 80kcal  
+
+※ 위 정보는 일반적인 기준이며 실제 조리 방식, 양, 재료에 따라 달라질 수 있습니다.
+"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")  # 무료 플랜 가능한 모델
-        response = model.generate_content(prompt)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        images = [Image.open(input_image_path)]
+        response = model.generate_content(
+            [prompt] + images,
+            generation_config={"temperature": 0.7}
+            )
         return response.text.strip()
     except Exception as e:
         return f"⚠️ Gemini API 호출 실패: {str(e)}"
